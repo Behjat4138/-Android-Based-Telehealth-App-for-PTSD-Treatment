@@ -21,3 +21,6 @@ This project is a prototype telehealth application designed to support PTSD trea
 ## How to Run Locally
 
 1. Install dependencies
+## Live Demo
+https://ptsdcare-5b0fe.web.app
+

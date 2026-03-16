@@ -8,40 +8,64 @@ function Dashboard({ user, setUser, setPage }) {
     setUser(null);
   };
 
+  const cards = [
+    {
+      icon: "🧠",
+      title: "AI Therapist",
+      body: "Conversational support — coming soon.",
+      action: null,
+    },
+    {
+      icon: "📋",
+      title: "PTSD Screening",
+      body: "Take the PC-PTSD-5 or PCL-5 — clinically validated self-assessments.",
+      action: () => setPage("screening"),
+    },
+    {
+      icon: "📚",
+      title: "Coping Resources",
+      body: "Guided coping strategies and grounding techniques.",
+      action: null,
+    },
+    {
+      icon: "📊",
+      title: "Mood Tracker",
+      body: "Track how you're feeling and see trends over time.",
+      action: () => setPage("mood"),
+    },
+  ];
+
   return (
     <div className="dashboard">
-      
       <div className="top-bar">
-        <h1>Hello, {user.displayName || "User"} 👋</h1>
+        <h1>Hello, {user.displayName || "Friend"} 👋</h1>
         <button onClick={handleLogout}>Logout</button>
       </div>
 
       <div className="card-container">
-
-        <div className="card">
-          <h3>🧠 AI Therapist</h3>
-          <p>Conversational support coming soon.</p>
-        </div>
-
-        <div className="card">
-          <h3>📋 PTSD Screening</h3>
-          <p>Assess your symptoms securely.</p>
-        </div>
-
-        <div className="card">
-          <h3>📚 Resources</h3>
-          <p>Guided coping strategies.</p>
-        </div>
-
-        <div 
-          className="card"
-          style={{ cursor: "pointer" }}
-          onClick={() => setPage("mood")}
-        >
-          <h3>📊 Mood Tracker</h3>
-          <p>Track how you're feeling daily.</p>
-        </div>
-
+        {cards.map(c => (
+          <div
+            key={c.title}
+            className="card"
+            style={{ cursor: c.action ? "pointer" : "default" }}
+            onClick={c.action || undefined}
+            role={c.action ? "button" : undefined}
+            tabIndex={c.action ? 0 : undefined}
+            onKeyDown={c.action ? (e) => e.key === "Enter" && c.action() : undefined}
+          >
+            <h3>{c.icon} {c.title}</h3>
+            <p>{c.body}</p>
+            {c.action && (
+              <button
+                className="card-link-btn"
+                onClick={(e) => { e.stopPropagation(); c.action(); }}
+                aria-label={`Open ${c.title}`}
+              >
+                Open →
+              </button>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

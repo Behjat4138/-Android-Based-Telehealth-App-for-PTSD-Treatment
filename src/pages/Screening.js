@@ -148,8 +148,77 @@ function Screening({ user, setPage }) {
     setSaving(false);
   };
 
+  /* ── SCORE STRATEGIES ── */
+  const STRATEGIES = {
+    "pc-ptsd5": {
+      positive: {
+        title: "Positive Screen — Recommended Strategies",
+        items: [
+          { icon:"👨‍⚕️", label:"Seek professional evaluation", desc:"A positive screen means a full clinical assessment would be beneficial. Please speak with a doctor or mental health professional." },
+          { icon:"🌬", label:"Daily box breathing", desc:"Practice 4-4-4-4 box breathing twice daily to calm your nervous system and reduce hyperarousal." },
+          { icon:"🧘", label:"Guided meditation", desc:"Use our 2-minute Safe Place meditation morning and night to reduce anxiety and improve sleep." },
+          { icon:"📓", label:"Mood journaling", desc:"Track your mood daily. Patterns in your mood can help a professional understand your symptoms better." },
+          { icon:"🤝", label:"Social support", desc:"Stay connected with trusted people. Isolation can worsen PTSD symptoms significantly." },
+        ],
+      },
+      negative: {
+        title: "Negative Screen — Staying Well",
+        items: [
+          { icon:"📊", label:"Continue monitoring", desc:"Even with a negative screen, tracking your mood over time can catch changes early." },
+          { icon:"🌿", label:"Grounding practice", desc:"Use the 5-4-3-2-1 technique when you feel disconnected or anxious." },
+          { icon:"💬", label:"Talk to someone", desc:"If you are still struggling, speaking to a counsellor is always a positive step — no threshold required." },
+        ],
+      },
+    },
+    "pcl5": {
+      high: {
+        title: "Probable PTSD (Score ≥ 33) — Recommended Strategies",
+        items: [
+          { icon:"👨‍⚕️", label:"Priority: professional assessment", desc:"A score of 33+ strongly indicates that professional evaluation and evidence-based treatment (CPT, EMDR, PE) would help you." },
+          { icon:"🛡", label:"Safety planning", desc:"Work with a professional to develop a safety plan for difficult moments. Save crisis numbers: 0800 567 567 (SA)." },
+          { icon:"🌬", label:"Daily regulated breathing", desc:"Breathing exercises should be practised twice daily — they directly reduce fight-or-flight activation." },
+          { icon:"🧘", label:"Morning meditation routine", desc:"A brief guided meditation each morning helps regulate the nervous system before daily stressors arise." },
+          { icon:"📓", label:"Mood & symptom tracking", desc:"Daily mood tracking helps identify triggers and patterns to discuss with your therapist." },
+          { icon:"🚶", label:"Gentle physical movement", desc:"Light walking, stretching or yoga reduces trauma stored in the body and improves mood significantly." },
+        ],
+      },
+      moderate: {
+        title: "Moderate Symptoms (Score 20–32) — Recommended Strategies",
+        items: [
+          { icon:"👨‍⚕️", label:"Consider professional support", desc:"A moderate score benefits from speaking with a therapist — especially one trained in trauma-informed care." },
+          { icon:"🌬", label:"Regular breathing exercises", desc:"Box breathing and extended exhale techniques help regulate anxiety and improve sleep quality." },
+          { icon:"🌿", label:"Grounding techniques", desc:"Use 5-4-3-2-1 whenever you notice intrusive thoughts or feel overwhelmed." },
+          { icon:"🧘", label:"Guided meditation", desc:"Try our 2-minute Body Scan meditation before sleeping to help your nervous system wind down." },
+          { icon:"📓", label:"Track triggers", desc:"Note what situations, times of day, or interactions trigger your symptoms in your mood journal." },
+        ],
+      },
+      low: {
+        title: "Minimal Symptoms (Score < 20) — Staying Well",
+        items: [
+          { icon:"📊", label:"Keep monitoring", desc:"Retake the PCL-5 monthly to catch any changes early. Symptoms can fluctuate." },
+          { icon:"💪", label:"Build resilience daily", desc:"Regular sleep, gentle movement, and social connection are your best protective factors." },
+          { icon:"🌿", label:"Preventive coping", desc:"Use grounding and breathing tools proactively — they are most effective when practised before crisis." },
+        ],
+      },
+    },
+  };
+
+  const getStrategies = () => {
+    if (!result || !test) return null;
+    if (test.id === "pc-ptsd5") {
+      return result.score >= 3 ? STRATEGIES["pc-ptsd5"].positive : STRATEGIES["pc-ptsd5"].negative;
+    }
+    if (test.id === "pcl5") {
+      if (result.score >= 33) return STRATEGIES["pcl5"].high;
+      if (result.score >= 20) return STRATEGIES["pcl5"].moderate;
+      return STRATEGIES["pcl5"].low;
+    }
+    return null;
+  };
+
   /* ── RESULT SCREEN ── */
   if (result) {
+    const strategies = getStrategies();
     return (
       <div className="dashboard">
         <div className="top-bar">
@@ -182,10 +251,29 @@ function Screening({ user, setPage }) {
             <div className="saved-confirmation">✅ Saved to your screening history.</div>
           )}
 
+          {/* Score strategies */}
+          {strategies && (
+            <div className="result-strategies">
+              <h3 className="result-strategies-title">{strategies.title}</h3>
+              <div className="result-strategy-list">
+                {strategies.items.map((s, i) => (
+                  <div className="result-strategy-item" key={i}>
+                    <span className="strategy-icon">{s.icon}</span>
+                    <div>
+                      <div className="strategy-label">{s.label}</div>
+                      <p className="strategy-desc">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="result-resources">
-            <h4>Next steps</h4>
+            <h4>Crisis support</h4>
             <div className="result-resource-chips">
-              <a href="tel:988"              className="resource-chip">📞 988 Crisis Lifeline</a>
+              <a href="tel:0800567567"       className="resource-chip">📞 0800 567 567 (SA)</a>
+              <a href="tel:988"              className="resource-chip">📞 988 (US)</a>
               <a href="sms:741741?body=HOME" className="resource-chip">💬 Crisis Text Line</a>
               <a href="tel:18009506264"      className="resource-chip">📞 NAMI Helpline</a>
             </div>

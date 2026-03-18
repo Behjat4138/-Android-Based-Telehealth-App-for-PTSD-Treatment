@@ -1,4 +1,4 @@
-# Android-Based Telehealth App for PTSD Treatment
+# Website for PTSD Treatment
 
 This project is a prototype telehealth application designed to support PTSD treatment through digital tools.
 

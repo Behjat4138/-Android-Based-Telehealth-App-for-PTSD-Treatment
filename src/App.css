@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-PTSDCare — App.css  (complete, all pages)
+   PTSDCare — App.css  (complete, all pages)
 ═══════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap');
@@ -1268,4 +1268,110 @@ h1,h2,h3,h4 {
 @media (max-width: 600px) {
   .med-active-card { padding: 28px 20px; }
   .med-script-text { font-size: 16px; }
+}
+
+/* ══════════════════════════════════════════════════
+   SCREENING HISTORY
+══════════════════════════════════════════════════ */
+.screening-history-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 10px var(--shadow);
+}
+.screening-history-note {
+  font-size: 15px;
+  color: var(--text-mid);
+  font-weight: 300;
+}
+
+.hist-guide-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  max-width: 820px;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 20px var(--shadow);
+}
+.hist-guide-tabs {
+  display: flex; gap: 10px; margin-bottom: 20px;
+}
+.hist-guide-tab {
+  padding: 8px 22px; border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: white; color: var(--text-mid);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.05em; transition: all 0.25s;
+}
+.hist-guide-tab.active { background: var(--rose); color: white; border-color: var(--rose); }
+.hist-guide-title { font-size: 20px; font-weight: 400; color: var(--text-dark); margin-bottom: 18px; }
+.hist-guide-rows { display: flex; flex-direction: column; gap: 12px; }
+.hist-guide-row {
+  display: flex; gap: 16px; align-items: flex-start;
+  border-left: 4px solid; padding: 14px 18px;
+  background: var(--cream); border-radius: 10px;
+}
+.hist-guide-range {
+  font-family: 'Fraunces', serif; font-size: 17px; font-weight: 400;
+  min-width: 72px; flex-shrink: 0; padding-top: 1px;
+}
+.hist-guide-label { font-size: 15px; font-weight: 500; color: var(--text-dark); margin-bottom: 3px; font-family: 'DM Sans', sans-serif; }
+.hist-guide-desc  { font-size: 13px; color: var(--text-soft); font-weight: 300; line-height: 1.5; }
+
+.hist-loading { font-size: 16px; color: var(--text-soft); padding: 40px 0; font-weight: 300; }
+.hist-empty {
+  text-align: center; padding: 60px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.hist-empty-icon { font-size: 44px; }
+.hist-empty p { font-size: 17px; color: var(--text-soft); font-weight: 300; }
+
+.hist-list { display: flex; flex-direction: column; gap: 16px; max-width: 820px; }
+.hist-result-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-left: 5px solid;
+  border-radius: 18px;
+  padding: 24px 24px 18px;
+  box-shadow: 0 4px 18px var(--shadow);
+  transition: transform 0.3s;
+}
+.hist-result-card:hover { transform: translateY(-3px); }
+.hist-result-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.hist-test-name { font-size: 18px; font-weight: 500; color: var(--text-dark); margin-bottom: 4px; font-family: 'DM Sans', sans-serif; }
+.hist-result-date { font-size: 13px; color: var(--text-soft); }
+.hist-score-circle {
+  width: 64px; height: 64px; border-radius: 50%; border: 2.5px solid;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.hist-score-num { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 300; line-height: 1; }
+.hist-score-sub { font-size: 10px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.06em; }
+.hist-result-level { font-size: 16px; font-weight: 500; margin-bottom: 14px; font-family: 'Fraunces', serif; }
+.hist-result-actions { display: flex; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
+.hist-delete-btn {
+  padding: 8px 18px; border-radius: 100px; background: transparent;
+  border: 1.5px solid rgba(200,100,100,0.25); color: #a84040;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.3s;
+}
+.hist-delete-btn:hover { background: rgba(200,100,100,0.08); border-color: rgba(200,100,100,0.5); }
+
+/* AI fallback note */
+.ai-fallback-note {
+  background: rgba(155,175,155,0.12);
+  border: 1px solid rgba(155,175,155,0.3);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--text-mid);
+  max-width: 780px;
+  margin-bottom: 12px;
+  line-height: 1.5;
 }

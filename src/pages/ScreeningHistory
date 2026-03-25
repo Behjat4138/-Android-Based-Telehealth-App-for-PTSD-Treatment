@@ -1,0 +1,246 @@
+import { useState, useEffect } from "react";
+import { collection, query, where, getDocs, orderBy, deleteDoc, doc } from "firebase/firestore";
+import { db } from "../firebase";
+
+// ------------------------
+// 1. Sanitizer – removes all non‑printable / invisible characters
+// ------------------------
+const sanitize = (str) => {
+  if (typeof str !== "string") return str;
+  // Remove control characters (0x00-0x1F, 0x7F) and zero‑width spaces
+  return str.replace(/[\x00-\x1F\x7F\u200B-\u200D\uFEFF]/g, "");
+};
+
+// ------------------------
+// 2. Language object – now all strings are sanitized at definition (optional but safe)
+// ------------------------
+const LANG = {
+  en: {
+    title: sanitize("Screening History"),
+    back: sanitize("← Dashboard"),
+    noHistory: sanitize("You haven't saved any screening results yet."),
+    takeTest: sanitize("Take a Screening Test"),
+    score: sanitize("Score"),
+    level: sanitize("Result"),
+    date: sanitize("Date"),
+    deleteBtn: sanitize("Delete"),
+    confirmDelete: sanitize("Delete this result?"),
+    loading: sanitize("Loading your history…"),
+    pcl5Guide: sanitize("PCL-5 Score Guide"),
+    pc5Guide: sanitize("PC-PTSD-5 Score Guide"),
+    guides: {
+      pcl5: [
+        { range: sanitize("0 – 19"), label: sanitize("Minimal symptoms"), color: "#7A9B7A", desc: sanitize("Very few PTSD symptoms. Keep monitoring and using preventive coping tools.") },
+        { range: sanitize("20 – 32"), label: sanitize("Moderate symptoms"), color: "#B8A87A", desc: sanitize("Moderate symptoms present. Speaking with a counsellor would be beneficial.") },
+        { range: sanitize("33 – 80"), label: sanitize("Probable PTSD"), color: "#C4956A", desc: sanitize("Symptoms consistent with PTSD. Please seek a full professional evaluation.") },
+      ],
+      pc5: [
+        { range: sanitize("0 – 2"), label: sanitize("Negative screen"), color: "#7A9B7A", desc: sanitize("Below the threshold. Continue monitoring if you are still experiencing symptoms.") },
+        { range: sanitize("3 – 5"), label: sanitize("Positive screen"), color: "#C4956A", desc: sanitize("Positive screen — a full clinical evaluation by a professional is recommended.") },
+      ],
+    },
+  },
+  zu: {
+    title: sanitize("Umlando Wokuhlola"),
+    back: sanitize("← Ibhodi"),
+    noHistory: sanitize("Awukagcini imiphumela yokuhlola."),
+    takeTest: sanitize("Thatha Uhlolo"),
+    score: sanitize("Inani"),
+    level: sanitize("Umphumela"),
+    date: sanitize("Usuku"),
+    deleteBtn: sanitize("Susa"),
+    confirmDelete: sanitize("Susa lo mphumela?"),
+    loading: sanitize("Ilowunda umlando wakho…"),
+    pcl5Guide: sanitize("Isiqondiso Samanani e-PCL-5"),
+    pc5Guide: sanitize("Isiqondiso Samanani e-PC-PTSD-5"),
+    guides: {
+      pcl5: [
+        { range: sanitize("0 – 19"), label: sanitize("Izibonakaliso ezincane"), color: "#7A9B7A", desc: sanitize("Izibonakaliso ze-PTSD ezimbalwa kakhulu. Qhubeka uqapha.") },
+        { range: sanitize("20 – 32"), label: sanitize("Izibonakaliso ezifaneleyo"), color: "#B8A87A", desc: sanitize("Izibonakaliso ezifaneleyo zikhona. Ukuxoxa nomuntu ongasiza kuzosiza.") },
+        { range: sanitize("33 – 80"), label: sanitize("I-PTSD engabonakala"), color: "#C4956A", desc: sanitize("Izibonakaliso ezifanele i-PTSD. Cela ukuhlolwa ngokugcwele uchwepheshe.") },
+      ],
+      pc5: [
+        { range: sanitize("0 – 2"), label: sanitize("Uhlolo olungemuhle"), color: "#7A9B7A", desc: sanitize("Ngaphansi komnyango. Qhubeka uqapha uma usenazo izibonakaliso.") },
+        { range: sanitize("3 – 5"), label: sanitize("Uhlolo olumuhle"), color: "#C4956A", desc: sanitize("Uhlolo olumuhle — ukuhlolwa ngokugcwele uchwepheshe kuyacelwa.") },
+      ],
+    },
+  },
+};
+
+const TYPE_COLORS = { "Hospital":"#D4A5A0","NGO / Community":"#9BAF9B","Crisis Line":"#C4956A","University":"#A0B4C8" };
+
+// ------------------------
+// 3. Local error boundary – catches rendering errors inside a result card
+// ------------------------
+class ResultCardErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Error rendering result card:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return <div className="hist-result-card-error">⚠️ Could not display this result.</div>;
+    }
+    return this.props.children;
+  }
+}
+
+// ------------------------
+// 4. Main component
+// ------------------------
+function ScreeningHistory({ user, setPage, lang = "en" }) {
+  const tx = LANG[lang] || LANG.en;
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeGuide, setActiveGuide] = useState("pcl5");
+
+  const fetchHistory = async () => {
+    setLoading(true);
+    try {
+      const q = query(
+        collection(db, "screenings"),
+        where("userId", "==", user.uid),
+        orderBy("date", "desc")
+      );
+      const snap = await getDocs(q);
+      // Sanitize all string fields as soon as data arrives
+      const sanitized = snap.docs.map(d => {
+        const data = d.data();
+        return {
+          id: sanitize(d.id),
+          testTitle: sanitize(data.testTitle),
+          testId: sanitize(data.testId),
+          level: sanitize(data.level),
+          score: data.score, // keep number
+          date: data.date,
+        };
+      });
+      setResults(sanitized);
+    } catch (e) {
+      // fallback without orderBy
+      try {
+        const q2 = query(collection(db, "screenings"), where("userId", "==", user.uid));
+        const snap2 = await getDocs(q2);
+        const data = snap2.docs.map(d => {
+          const docData = d.data();
+          return {
+            id: sanitize(d.id),
+            testTitle: sanitize(docData.testTitle),
+            testId: sanitize(docData.testId),
+            level: sanitize(docData.level),
+            score: docData.score,
+            date: docData.date,
+          };
+        }).sort((a, b) => (b.date?.seconds || 0) - (a.date?.seconds || 0));
+        setResults(data);
+      } catch (e2) { console.error(e2); }
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchHistory(); }, []); // eslint-disable-line
+
+  const handleDelete = async (id) => {
+    if (!window.confirm(tx.confirmDelete)) return;
+    await deleteDoc(doc(db, "screenings", id));
+    setResults(r => r.filter(x => x.id !== id));
+  };
+
+  const formatDate = (ts) => {
+    if (!ts) return "—";
+    try {
+      const d = ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
+      const formatted = d.toLocaleDateString(lang === "zu" ? "en-ZA" : "en-US", { year:"numeric", month:"short", day:"numeric" });
+      return sanitize(formatted); // sanitize the date string too
+    } catch {
+      return "—";
+    }
+  };
+
+  const SCORE_COLOURS = {
+    "Positive screen":"#C4956A","Negative screen":"#7A9B7A",
+    "Probable PTSD":"#C4956A","Moderate symptoms":"#B8A87A","Minimal symptoms":"#7A9B7A",
+  };
+
+  const guide = tx.guides[activeGuide];
+  const guideTitle = activeGuide === "pcl5" ? tx.pcl5Guide : tx.pc5Guide;
+
+  return (
+    <div className="dashboard">
+      <div className="top-bar">
+        <h1 className="page-title">{tx.title}</h1>
+        <button onClick={() => setPage("dashboard")}>{tx.back}</button>
+      </div>
+
+      {/* Score guide */}
+      <div className="hist-guide-card">
+        <div className="hist-guide-tabs">
+          <button className={`hist-guide-tab${activeGuide==="pcl5"?" active":""}`} onClick={() => setActiveGuide("pcl5")}>PCL-5</button>
+          <button className={`hist-guide-tab${activeGuide==="pc5"?" active":""}`} onClick={() => setActiveGuide("pc5")}>PC-PTSD-5</button>
+        </div>
+        <h3 className="hist-guide-title">{guideTitle}</h3>
+        <div className="hist-guide-rows">
+          {guide.map(g => (
+            <div className="hist-guide-row" key={g.range} style={{ borderLeftColor: g.color }}>
+              <div className="hist-guide-range" style={{ color: g.color }}>{g.range}</div>
+              <div>
+                <div className="hist-guide-label" style={{ color: g.color }}>{g.label}</div>
+                <p className="hist-guide-desc">{g.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Results list */}
+      {loading ? (
+        <div className="hist-loading">{tx.loading}</div>
+      ) : results.length === 0 ? (
+        <div className="hist-empty">
+          <div className="hist-empty-icon">📋</div>
+          <p>{tx.noHistory}</p>
+          <button className="btn-rose-sm" onClick={() => setPage("screening")}>{tx.takeTest}</button>
+        </div>
+      ) : (
+        <div className="hist-list">
+          {results.map(r => {
+            const col = SCORE_COLOURS[r.level] || "#C4B5A5";
+            return (
+              <ResultCardErrorBoundary key={r.id}>
+                <div className="hist-result-card" style={{ borderLeftColor: col }}>
+                  <div className="hist-result-top">
+                    <div>
+                      <div className="hist-test-name">{r.testTitle || r.testId || "Unknown"}</div>
+                      <div className="hist-result-date">{formatDate(r.date)}</div>
+                    </div>
+                    <div className="hist-score-circle" style={{ borderColor: col }}>
+                      <span className="hist-score-num">{r.score}</span>
+                      <span className="hist-score-sub">{tx.score}</span>
+                    </div>
+                  </div>
+                  <div className="hist-result-level" style={{ color: col }}>{r.level}</div>
+                  <div className="hist-result-actions">
+                    <button className="btn-rose-sm" onClick={() => setPage("screening")}>
+                      Retake →
+                    </button>
+                    <button className="hist-delete-btn" onClick={() => handleDelete(r.id)}>
+                      🗑 {tx.deleteBtn}
+                    </button>
+                  </div>
+                </div>
+              </ResultCardErrorBoundary>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default ScreeningHistory;

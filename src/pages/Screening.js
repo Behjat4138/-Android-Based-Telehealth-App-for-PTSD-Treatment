@@ -285,6 +285,7 @@ function Screening({ user, setPage }) {
             <button className="btn-secondary-sm" onClick={() => startTest(test.id)}>Retake Test</button>
             <button className="btn-secondary-sm" onClick={() => { setSelected(null); setResult(null); }}>Back to Screening</button>
             <button className="btn-primary-sm"   onClick={() => setPage("dashboard")}>Dashboard</button>
+            <button className="btn-secondary-sm" onClick={() => setPage("screening-history")}>📋 My History</button>
           </div>
         </div>
       </div>
@@ -302,6 +303,10 @@ function Screening({ user, setPage }) {
             <button onClick={() => setPage("dashboard")}>← Dashboard</button>
           </div>
           <div className="screening-card-wrap">
+        <div className="screening-history-bar">
+          <p className="screening-history-note">📋 Previously taken a test?</p>
+          <button className="btn-ghost-sm" onClick={() => setPage("screening-history")}>View My History →</button>
+        </div>
             <div className="screen-intro-card">
               <p className="screen-intro-text">{test.intro}</p>
               <div className="yn-btns">
@@ -331,6 +336,10 @@ function Screening({ user, setPage }) {
         </div>
 
         <div className="screening-card-wrap">
+        <div className="screening-history-bar">
+          <p className="screening-history-note">📋 Previously taken a test?</p>
+          <button className="btn-ghost-sm" onClick={() => setPage("screening-history")}>View My History →</button>
+        </div>
           <div className="screen-test-meta">
             <h3>{test.subtitle}</h3>
             <p>{test.intro}</p>
@@ -407,6 +416,10 @@ function Screening({ user, setPage }) {
       </div>
 
       <div className="screening-card-wrap">
+        <div className="screening-history-bar">
+          <p className="screening-history-note">📋 Previously taken a test?</p>
+          <button className="btn-ghost-sm" onClick={() => setPage("screening-history")}>View My History →</button>
+        </div>
         <div className="screening-page-disclaimer">
           ⚠️ These tools are for <strong>self-awareness only</strong> — they do not provide a diagnosis.
           Results are saved privately to your account. Always discuss results with a qualified mental health professional.

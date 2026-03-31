@@ -235,7 +235,7 @@ The following are shown throughout the app, especially on the landing page and i
 
 ## Project Info
 
-**Course:** Health Informatics / Final Year Project
-**Institution:** [Your institution]
+**Course:** Software Engineering Practicum
+**Institution:** Emory University
 **Student:** Behjat Riyaz
 **Year:** 2025

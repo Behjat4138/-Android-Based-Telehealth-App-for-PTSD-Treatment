@@ -159,7 +159,7 @@ Use these to test the app without creating a new account:
 
 | Role | Email | Password |
 |---|---|---|
-| Standard user | testuser@ptsdcare.app | TestUser123! |
+| Standard user | testuser@gmail.com | 123456 |
 
 > If these credentials do not work, register a new account at the live URL. Email verification is required -- use a real email address you can access.
 
@@ -261,7 +261,7 @@ Each chat session starts fresh. The AI does not have access to the user's mood h
 
 ## Project Info
 
-**Course:** Health Informatics
+**Course:** Software Engineering Practicum
 **Student:** Behjat Riyaz
 **Year:** 2025
 **Firebase project ID:** ptsdcare-5b0fe
